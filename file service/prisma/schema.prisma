@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model FileSubmission {
+  id                 Int              @id @default(autoincrement())
+  personId           Int
+  studentId          Int
+  documentType       String
+  fileName           String
+  fileDescription    String
+  fileSize           String
+  fileFormat         String
+  submissionDate     DateTime         @default(now())
+  ADMINISTRATION     ValidationStatus @default(PENDING)
+  EDUCATION          ValidationStatus @default(PENDING)
+  FINANCE            ValidationStatus @default(PENDING)
+  comments           String?
+}
+
+enum ValidationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/*
+{
+    "message": "Login successful",
+    "user": {
+        "id": 10,
+        "email": "nour@gmail.com",
+        "firstName": "Nour",
+        "lastName": "Nezzar",
+        "roleDetails": {
+            "role": "STUDENT",
+            "studentId": 9
+        }
+    }
+}
+*/
