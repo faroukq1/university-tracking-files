@@ -7,7 +7,7 @@ const swaggerUi = require("swagger-ui-express");
 const app = express();
 app.use(express.json());
 
-const URL = "http://localhost:3030/api/file"; // Replace with actual URL of your server
+const URL = "http://localhost:3030/api/file";
 
 const DEPARTMENT = {
   ADMINISTRATION: "ADMINISTRATION",
@@ -29,18 +29,17 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://localhost:${process.env.PORT || 3060}`, // Use dynamic port or hardcoded
+        url: `http://localhost:${process.env.PORT || 3060}`,
       },
     ],
   },
-  apis: ["./app.js"], // Path to the API doc comments in your files
+  apis: ["./app.js"],
 };
 
 // Setup Swagger
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// API endpoint for worker action
 /**
  * @swagger
  * /api/work:
