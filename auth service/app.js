@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const express = require("express");
+const cors = require("cors");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 const port = process.env.PORT;
@@ -8,7 +9,13 @@ require("dotenv").config();
 const app = express();
 const prisma = new PrismaClient();
 app.use(express.json());
-
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 // Swagger configuration
 const swaggerOptions = {
   definition: {
