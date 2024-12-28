@@ -2,11 +2,11 @@ const { PrismaClient } = require("@prisma/client");
 const express = require("express");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
+const port = process.env.PORT;
 require("dotenv").config();
 
 const app = express();
 const prisma = new PrismaClient();
-
 app.use(express.json());
 
 // Swagger configuration
@@ -20,7 +20,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "http://localhost:3000",
+        url: `http://localhost:${port}`,
       },
     ],
   },
@@ -90,10 +90,10 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  *         description: Server error
  */
 app.get("/api/auth", async (req, res) => {
-  const { email: user_email, password } = req.body;
+  const { email, password } = req.body;
   try {
     const user = await prisma.person.findUnique({
-      where: { email: user_email },
+      where: { email },
     });
     const not_valid = !user || user.password != password;
     if (not_valid) {
@@ -142,7 +142,7 @@ app.get("/api/auth", async (req, res) => {
 });
 
 // Start the server
-app.listen(process.env.PORT || 3000, () => {
-  console.log("server running on port : " + (process.env.PORT || 3000));
-  console.log("Swagger Docs available at http://localhost:3000/api-docs");
+app.listen(port || 3000, () => {
+  console.log("server running on port : " + (port || 3000));
+  console.log(`Swagger Docs available at http://localhost:${port}/api-docs`);
 });
