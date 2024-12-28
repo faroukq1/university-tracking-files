@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useState } from "react";
 import { Button } from "../components/ui/button";
 import {
@@ -13,12 +14,16 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 
+const user = localStorage.getItem("user");
+const current_user = user ? JSON.parse(user) : null;
+
 const AuthLogin = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+
   const handleSignUp = async () => {
     setLoading(true); // Set loading to true before making the request
     setError(null); // Reset error state
@@ -32,8 +37,9 @@ const AuthLogin = () => {
       const data = response.data;
       const role = data.user.roleDetails.role;
       toast.success("Logged in successfully!");
-      if (role == "WORKER") navigate("/worker/dashboard");
-      if (role == "STUDENT") navigate("/student/dashboard");
+      localStorage.setItem("user", JSON.stringify(data));
+      if (role === "WORKER") navigate("/worker/dashboard");
+      if (role === "STUDENT") navigate("/student/dashboard");
       setEmail("");
       setPassword("");
     } catch (err) {
