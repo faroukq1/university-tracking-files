@@ -19,24 +19,21 @@ app.get("/api/auth", async (req, res) => {
         message: "Invalid email or password",
       });
     }
-    let roleDetails = {};
 
+    let roleDetails = {};
     const { role } = user;
     if (role == "STUDENT") {
       const student = await prisma.student.findUnique({
-        where: {
-          personId: user.id,
-        },
+        where: { personId: user.id },
       });
+
       roleDetails = {
         role: "STUDENT",
         studentId: student?.id,
       };
     } else if (role == "WORKER") {
       const worker = await prisma.worker.findUnique({
-        where: {
-          personId: user.id,
-        },
+        where: { personId: user.id },
       });
       roleDetails = {
         workerId: worker?.id,

@@ -6,6 +6,12 @@ const prisma = new PrismaClient();
 require("dotenv").config();
 app.use(express.json());
 
+const DEPARTMENT = {
+  ADMINISTRATION: "ADMINISTRATION",
+  EDUCATION: "EDUCATION",
+  FINANCE: "FINANCE",
+};
+
 // multer configuration
 const upload = multer({
   storage: multer.diskStorage({
@@ -54,14 +60,8 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-app.get("/api/get-files/:department", async (req, res) => {
-  const DEPARTMENT = {
-    ADMINISTRATION: "ADMINISTRATION",
-    EDUCATION: "EDUCATION",
-    FINANCE: "FINANCE",
-  };
-  const department = req.params.department;
-
+app.get("/api/files", async (req, res) => {
+  const department = req.body;
   try {
     const worker_department = DEPARTMENT[department];
 
@@ -110,6 +110,49 @@ app.get("/api/get-files/:department", async (req, res) => {
   }
 });
 
+app.patch("/api/file", async (req, res) => {
+  const { department, fileId, status } = req.body;
+  const VALID_STATUSES = ["ACCEPTED", "REJECTED"];
+  const CURRENT_DEPARTMENT = DEPARTMENT[department];
+  try {
+    if (!CURRENT_DEPARTMENT) {
+      res
+        .status(401)
+        .send({ message: "There is no depatment with this name..." });
+      return;
+    }
+
+    if (!VALID_STATUSES.includes(status)) {
+      res.status(401).send({ message: "There is no status with this type..." });
+      return;
+    }
+
+    const file = await prisma.fileSubmission.findUnique({
+      where: {
+        id: parseInt(fileId),
+      },
+    });
+
+    if (!file) {
+      res.status(401).send({ message: "File not found..." });
+      return;
+    }
+
+    const updateFile = await prisma.fileSubmission.update({
+      where: { id: parseInt(fileId) },
+      data: { [CURRENT_DEPARTMENT]: status },
+    });
+    res.status(200).send({
+      message: `File status for department ${CURRENT_DEPARTMENT} is ${status}`,
+      file: updateFile,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      message: "There was en erorr...",
+    });
+  }
+});
 // listening
 app.listen(process.env.PORT, () => {
   console.log("server running on port : " + process.env.PORT);
