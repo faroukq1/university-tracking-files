@@ -1,9 +1,13 @@
 const { PrismaClient } = require("@prisma/client");
 const express = require("express");
 const multer = require("multer");
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsdoc = require("swagger-jsdoc");
+require("dotenv").config();
+
 const app = express();
 const prisma = new PrismaClient();
-require("dotenv").config();
+
 app.use(express.json());
 
 const DEPARTMENT = {
@@ -56,12 +60,33 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).send("server error");
+    res.status(500).send("Server error");
   }
 });
 
+/**
+ * @swagger
+ * /api/files:
+ *   get:
+ *     summary: Get all files for a specific department
+ *     description: Retrieves all file submissions for a given department.
+ *     parameters:
+ *       - in: query
+ *         name: department
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The department name (ADMINISTRATION, EDUCATION, FINANCE).
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved the files.
+ *       401:
+ *         description: Department not found.
+ *       500:
+ *         description: Internal server error.
+ */
 app.get("/api/files", async (req, res) => {
-  const department = req.body;
+  const department = req.query.department;
   try {
     const worker_department = DEPARTMENT[department];
 
@@ -110,6 +135,34 @@ app.get("/api/files", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/file:
+ *   patch:
+ *     summary: Update file status
+ *     description: Updates the status of a file submission for a specific department.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               department:
+ *                 type: string
+ *               fileId:
+ *                 type: integer
+ *               status:
+ *                 type: string
+ *                 enum: [ACCEPTED, REJECTED]
+ *     responses:
+ *       200:
+ *         description: File status updated successfully
+ *       401:
+ *         description: Invalid department or status
+ *       500:
+ *         description: Internal server error
+ */
 app.patch("/api/file", async (req, res) => {
   const { department, fileId, status } = req.body;
   const VALID_STATUSES = ["ACCEPTED", "REJECTED"];
@@ -118,12 +171,12 @@ app.patch("/api/file", async (req, res) => {
     if (!CURRENT_DEPARTMENT) {
       res
         .status(401)
-        .send({ message: "There is no depatment with this name..." });
+        .send({ message: "There is no department with this name..." });
       return;
     }
 
     if (!VALID_STATUSES.includes(status)) {
-      res.status(401).send({ message: "There is no status with this type..." });
+      res.status(401).send({ message: "Invalid status type..." });
       return;
     }
 
@@ -149,11 +202,36 @@ app.patch("/api/file", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send({
-      message: "There was en erorr...",
+      message: "There was an error...",
     });
   }
 });
-// listening
+
+// Swagger configuration
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "File Management API",
+      version: "1.0.0",
+      description:
+        "API for managing file submissions and statuses by different departments",
+    },
+    servers: [
+      {
+        url: "http://localhost:3060",
+      },
+    ],
+  },
+  apis: ["./app.js"], // Path to the API doc comments
+};
+
+// Serve Swagger documentation
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Listening on port 3060
 app.listen(process.env.PORT, () => {
-  console.log("server running on port : " + process.env.PORT);
+  console.log("Server running on port : " + process.env.PORT);
+  console.log("Swagger Docs available at http://localhost:3030/api-docs");
 });

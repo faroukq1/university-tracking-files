@@ -1,12 +1,94 @@
 const { PrismaClient } = require("@prisma/client");
 const express = require("express");
-const app = express();
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsdoc = require("swagger-jsdoc");
 require("dotenv").config();
 
-// Prisma instance
+const app = express();
 const prisma = new PrismaClient();
 
 app.use(express.json());
+
+// Swagger configuration
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Authentication API",
+      version: "1.0.0",
+      description: "API documentation for the authentication system",
+    },
+    servers: [
+      {
+        url: "http://localhost:3000",
+      },
+    ],
+  },
+  apis: ["./app.js"],
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
+// Serve Swagger UI
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Authentication API
+/**
+ * @swagger
+ * /api/auth:
+ *   get:
+ *     summary: User login
+ *     description: Authenticates a user based on email and password.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "user@example.com"
+ *               password:
+ *                 type: string
+ *                 example: "securepassword"
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     email:
+ *                       type: string
+ *                     firstName:
+ *                       type: string
+ *                     lastName:
+ *                       type: string
+ *                     roleDetails:
+ *                       type: object
+ *                       properties:
+ *                         role:
+ *                           type: string
+ *                         studentId:
+ *                           type: integer
+ *                         workerId:
+ *                           type: integer
+ *                         department:
+ *                           type: string
+ *       401:
+ *         description: Invalid email or password
+ *       500:
+ *         description: Server error
+ */
 app.get("/api/auth", async (req, res) => {
   const { email: user_email, password } = req.body;
   try {
@@ -15,23 +97,22 @@ app.get("/api/auth", async (req, res) => {
     });
     const not_valid = !user || user.password != password;
     if (not_valid) {
-      res.status(401).send({
+      return res.status(401).send({
         message: "Invalid email or password",
       });
     }
 
     let roleDetails = {};
     const { role } = user;
-    if (role == "STUDENT") {
+    if (role === "STUDENT") {
       const student = await prisma.student.findUnique({
         where: { personId: user.id },
       });
-
       roleDetails = {
         role: "STUDENT",
         studentId: student?.id,
       };
-    } else if (role == "WORKER") {
+    } else if (role === "WORKER") {
       const worker = await prisma.worker.findUnique({
         where: { personId: user.id },
       });
@@ -41,6 +122,7 @@ app.get("/api/auth", async (req, res) => {
         department: worker?.department,
       };
     }
+
     res.status(200).send({
       message: "Login successful",
       user: {
@@ -58,6 +140,9 @@ app.get("/api/auth", async (req, res) => {
     });
   }
 });
+
+// Start the server
 app.listen(process.env.PORT || 3000, () => {
-  console.log("server running on port : " + process.env.PORT || 3000);
+  console.log("server running on port : " + (process.env.PORT || 3000));
+  console.log("Swagger Docs available at http://localhost:3000/api-docs");
 });
