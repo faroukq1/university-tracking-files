@@ -12,7 +12,7 @@ import { FaGithubAlt } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import useAuthStore from "../store/authStore";
+import { useAuthStore } from "../store/authStore";
 
 const AuthLogin = () => {
   const [email, setEmail] = useState<string>("");

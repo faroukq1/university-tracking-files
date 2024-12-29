@@ -28,19 +28,3 @@ enum ValidationStatus {
   APPROVED
   REJECTED
 }
-
-/*
-{
-    "message": "Login successful",
-    "user": {
-        "id": 10,
-        "email": "nour@gmail.com",
-        "firstName": "Nour",
-        "lastName": "Nezzar",
-        "roleDetails": {
-            "role": "STUDENT",
-            "studentId": 9
-        }
-    }
-}
-*/

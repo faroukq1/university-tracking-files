@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -22,32 +22,74 @@ import {
 import { Button } from "../components/ui/button";
 import { MoreHorizontal, Check, X } from "lucide-react";
 import { toast } from "react-toastify";
+import { useAuthStore } from "../store/authStore";
+import axios from "axios";
 
-interface DocumentStatusProps {
-  studentId: string;
-}
+type fileType = {
+  id: number;
+  studentId: number;
+  ADMINISTRATION: string;
+  EDUCATION: string;
+  FINANCE: string;
+  comments: null | string;
+  documentType: string;
+  fileDescription: string;
+  fileFormat: string;
+  fileName: string;
+  fileSize: string;
+  submissionDate: string;
+};
 
-const DocumentStatusTable = () => {
-  const data = {
-    studentId: 10,
-    ADMINISTRATION: "PENDING",
-    EDUCATION: "PENDING",
-    FINANCE: "PENDING",
-    comments: null,
-    documentType: "passport",
-    fileDescription: "Student ID Document",
-    fileFormat: "application/pdf",
-    fileName: "1735332079640-Chapitre2-SOA-Klai.pdf",
-    fileSize: "2044802",
-    submissionDate: "2024-12-27T20:41:19.673Z",
+const isFileTypeKey = (key: string): key is keyof fileType => {
+  return ["ADMINISTRATION", "EDUCATION", "FINANCE"].includes(key);
+};
+
+const DocumentStatusTable = ({ data }: { data: fileType }) => {
+  const [file, setFile] = useState(data);
+  const workerDepartment =
+    useAuthStore((state) => state.user?.roleDetails.department) ||
+    "ADMINISTRATION";
+  const currentStatus = file[workerDepartment as keyof fileType];
+  const handleAccept = async () => {
+    try {
+      const URL = "http://localhost:3060/api/work";
+      if (isFileTypeKey(workerDepartment)) {
+        await axios.post(URL, {
+          workerDepartment: workerDepartment,
+          fileId: file.id,
+          action: "APPROVED",
+        });
+        const newFile = { ...file, [workerDepartment]: "APPROVED" };
+        setFile(newFile);
+        console.log(newFile);
+        toast.success("File has been accepted");
+      } else {
+        toast.error("Invalid department");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const handleAccept = () => {
-    toast.success("File has been accepted");
-  };
-
-  const handleReject = () => {
-    toast.error("File has been regected");
+  const handleReject = async () => {
+    try {
+      const URL = "http://localhost:3060/api/work";
+      if (isFileTypeKey(workerDepartment)) {
+        await axios.post(URL, {
+          workerDepartment: workerDepartment,
+          fileId: file.id,
+          action: "REJECTED",
+        });
+        const newFile = { ...file, [workerDepartment]: "REJECTED" };
+        setFile(newFile);
+        console.log(newFile);
+        toast.error("File has been rejected");
+      } else {
+        toast.error("Invalid department");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -67,20 +109,32 @@ const DocumentStatusTable = () => {
         <TableBody>
           <TableRow>
             <TableCell>
-              <span className="font-medium">{data.studentId}</span>
+              <span className="font-medium">{file.studentId}</span>
             </TableCell>
             <TableCell>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                {data.ADMINISTRATION}
+              <span
+                className={`inline-flex items-center 
+                  px-2.5 py-0.5 rounded-full text-xs font-medium 
+                  ${
+                    currentStatus == "PENDING" &&
+                    "bg-yellow-100 text-yellow-800"
+                  }
+                  ${
+                    currentStatus == "APPROVED" && "bg-green-100 text-green-800"
+                  }
+                  ${currentStatus == "REJECTED" && "bg-red-100 text-red-800"}
+                  `}
+              >
+                {currentStatus}
               </span>
             </TableCell>
-            <TableCell>{data.documentType}</TableCell>
-            <TableCell>{data.fileDescription}</TableCell>
-            <TableCell className="max-w-xs truncate" title={data.fileName}>
-              {data.fileName}
+            <TableCell>{file.documentType}</TableCell>
+            <TableCell>{file.fileDescription}</TableCell>
+            <TableCell className="max-w-xs truncate" title={file.fileName}>
+              {file.fileName}
             </TableCell>
             <TableCell>
-              {new Date(data.submissionDate).toLocaleDateString()}
+              {new Date(file.submissionDate).toLocaleDateString()}
             </TableCell>
             <TableCell className="text-right">
               <DropdownMenu>
@@ -121,36 +175,36 @@ const DocumentStatusTable = () => {
                   <p className="text-sm font-medium text-gray-500">
                     Student ID
                   </p>
-                  <p>{data.studentId}</p>
+                  <p>{file.studentId}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">
                     Administration
                   </p>
-                  <p>{data.ADMINISTRATION}</p>
+                  <p>{file.ADMINISTRATION}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Education</p>
-                  <p>{data.EDUCATION}</p>
+                  <p>{file.EDUCATION}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Finance</p>
-                  <p>{data.FINANCE}</p>
+                  <p>{file.FINANCE}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Comments</p>
-                  <p>{data.comments || "No comments"}</p>
+                  <p>{file.comments || "No comments"}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">
                     File Format
                   </p>
-                  <p>{data.fileFormat}</p>
+                  <p>{file.fileFormat}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">File Size</p>
                   <p>
-                    {Math.round((Number(data.fileSize) / 1024 / 1024) * 100) /
+                    {Math.round((Number(file.fileSize) / 1024 / 1024) * 100) /
                       100}{" "}
                     MB
                   </p>

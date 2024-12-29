@@ -15,11 +15,31 @@ interface User {
   lastName: string;
   roleDetails: RoleDetails;
 }
+type fileType = {
+  ADMINISTRATION: "PENDING";
+  EDUCATION: "PENDING";
+  FINANCE: "PENDING";
+  comments: string | null;
+  documentType: "passport" | string;
+  fileDescription: string;
+  fileFormat: string;
+  fileName: string;
+  fileSize: string;
+  id: number;
+  personId: number;
+  studentId: number;
+  submissionDate: string;
+};
 
 interface AuthState {
   user: User | null;
   setUser: (userData: User) => void;
   clearUser: () => void;
+}
+
+interface studentFileState {
+  studentsFiles: fileType[];
+  setStudentsFiles: (studentsFilesData: fileType[]) => void;
 }
 
 const useAuthStore = create<AuthState>()(
@@ -38,4 +58,14 @@ const useAuthStore = create<AuthState>()(
   )
 );
 
-export default useAuthStore;
+const useStudentStore = create<studentFileState>()(
+  persist(
+    (set) => ({
+      studentsFiles: [],
+      setStudentsFiles: (studentsFilesData: fileType[]) =>
+        set(() => ({ studentsFiles: studentsFilesData })),
+    }),
+    { name: "studentsFilesStorage" }
+  )
+);
+export { useAuthStore, useStudentStore };

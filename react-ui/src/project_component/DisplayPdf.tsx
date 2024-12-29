@@ -65,7 +65,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
   return (
     <div
-      className={`h-[85vh] flex flex-col justify-center gap-4 max-w-5xl mx-auto ${className}`}
+      className={`h-[83vh] flex flex-col justify-center gap-4 max-w-5xl mx-auto ${className}`}
     >
       <Card className="p-2 h-full">
         <CardContent className="p-0 relative h-full">

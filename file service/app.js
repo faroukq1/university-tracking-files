@@ -2,13 +2,13 @@ const { PrismaClient } = require("@prisma/client");
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
-const swaggerUi = require("swagger-ui-express");
-const swaggerJsdoc = require("swagger-jsdoc");
 require("dotenv").config();
 
 const app = express();
 const prisma = new PrismaClient();
+
 app.use(express.json());
+app.use("/uploads", express.static("uploads"));
 app.use(
   cors({
     origin: "*",
@@ -17,6 +17,7 @@ app.use(
   })
 );
 
+// Department constants
 const DEPARTMENT = {
   ADMINISTRATION: "ADMINISTRATION",
   EDUCATION: "EDUCATION",
@@ -41,7 +42,7 @@ const upload = multer({
   },
 });
 
-// handle file upload
+// Handle file upload
 app.post("/api/upload", upload.single("file"), async (req, res) => {
   try {
     const { personId, studentId, documentType, fileDescription } = req.body;
@@ -71,27 +72,7 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /api/files:
- *   get:
- *     summary: Get all files for a specific department
- *     description: Retrieves all file submissions for a given department.
- *     parameters:
- *       - in: query
- *         name: department
- *         required: true
- *         schema:
- *           type: string
- *         description: The department name (ADMINISTRATION, EDUCATION, FINANCE).
- *     responses:
- *       200:
- *         description: Successfully retrieved the files.
- *       401:
- *         description: Department not found.
- *       500:
- *         description: Internal server error.
- */
+// Get files by department
 app.get("/api/files/:department", async (req, res) => {
   const department = req.params.department;
   try {
@@ -106,7 +87,6 @@ app.get("/api/files/:department", async (req, res) => {
 
     let department_files = null;
 
-    // Dynamically build where clause
     if (worker_department === "ADMINISTRATION") {
       department_files = await prisma.fileSubmission.findMany({
         where: {
@@ -142,103 +122,68 @@ app.get("/api/files/:department", async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /api/file:
- *   patch:
- *     summary: Update file status
- *     description: Updates the status of a file submission for a specific department.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               department:
- *                 type: string
- *               fileId:
- *                 type: integer
- *               status:
- *                 type: string
- *                 enum: [ACCEPTED, REJECTED]
- *     responses:
- *       200:
- *         description: File status updated successfully
- *       401:
- *         description: Invalid department or status
- *       500:
- *         description: Internal server error
- */
+// Update file status
 app.patch("/api/file", async (req, res) => {
   const { department, fileId, status } = req.body;
-  const VALID_STATUSES = ["ACCEPTED", "REJECTED"];
+
+  const DEPARTMENT = {
+    ADMINISTRATION: "ADMINISTRATION",
+    EDUCATION: "EDUCATION",
+    FINANCE: "FINANCE",
+  };
+
+  const VALID_STATUSES = ["PENDING", "APPROVED", "REJECTED"]; // Enum values
+
   const CURRENT_DEPARTMENT = DEPARTMENT[department];
+  if (!CURRENT_DEPARTMENT) {
+    return res.status(400).send({
+      message: `Invalid department: ${department}`,
+    });
+  }
+
+  if (!VALID_STATUSES.includes(status)) {
+    return res.status(400).send({
+      message: `Invalid status: ${status}. Expected one of ${VALID_STATUSES.join(
+        ", "
+      )}.`,
+    });
+  }
+
+  if (!fileId || isNaN(parseInt(fileId))) {
+    return res.status(400).send({
+      message: `Invalid fileId: ${fileId}`,
+    });
+  }
+
   try {
-    if (!CURRENT_DEPARTMENT) {
-      res
-        .status(401)
-        .send({ message: "There is no department with this name..." });
-      return;
-    }
-
-    if (!VALID_STATUSES.includes(status)) {
-      res.status(401).send({ message: "Invalid status type..." });
-      return;
-    }
-
     const file = await prisma.fileSubmission.findUnique({
-      where: {
-        id: parseInt(fileId),
-      },
+      where: { id: parseInt(fileId) },
     });
 
     if (!file) {
-      res.status(401).send({ message: "File not found..." });
-      return;
+      return res.status(404).send({
+        message: "File not found.",
+      });
     }
 
     const updateFile = await prisma.fileSubmission.update({
       where: { id: parseInt(fileId) },
       data: { [CURRENT_DEPARTMENT]: status },
     });
-    res.status(200).send({
-      message: `File status for department ${CURRENT_DEPARTMENT} is ${status}`,
+
+    return res.status(200).send({
+      message: `File status for department '${CURRENT_DEPARTMENT}' updated to '${status}'.`,
       file: updateFile,
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).send({
-      message: "There was an error...",
+    console.error(error);
+    return res.status(500).send({
+      message: "There was an error processing your request.",
+      error: error.message,
     });
   }
 });
 
-// Swagger configuration
-const swaggerOptions = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "File Management API",
-      version: "1.0.0",
-      description:
-        "API for managing file submissions and statuses by different departments",
-    },
-    servers: [
-      {
-        url: "http://localhost:3060",
-      },
-    ],
-  },
-  apis: ["./app.js"], // Path to the API doc comments
-};
-
-// Serve Swagger documentation
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-// Listening on port 3060
 app.listen(process.env.PORT, () => {
   console.log("Server running on port : " + process.env.PORT);
-  console.log("Swagger Docs available at http://localhost:3030/api-docs");
 });

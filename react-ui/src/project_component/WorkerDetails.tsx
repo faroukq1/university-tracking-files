@@ -5,8 +5,8 @@ import {
   CardContent,
 } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
-import { User, Building2, Mail, Briefcase } from "lucide-react";
-import useAuthStore from "../store/authStore";
+import { User, Building2, Mail } from "lucide-react";
+import { useAuthStore } from "../store/authStore";
 
 const WorkerDetails = () => {
   const user = useAuthStore((state) => state.user);
@@ -26,7 +26,7 @@ const WorkerDetails = () => {
   const { department, role } = roleDetails;
 
   return (
-    <Card className="w-full mx-auto p-0">
+    <Card className="w-full mx-auto p-0 rounded-sm">
       <CardHeader className="space-y-1">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl">Worker Profile</CardTitle>

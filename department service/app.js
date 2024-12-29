@@ -1,11 +1,19 @@
 const { default: axios } = require("axios");
 const express = require("express");
+const cors = require("cors");
 require("dotenv").config();
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 
 const app = express();
 app.use(express.json());
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 const URL = "http://localhost:3030/api/file";
 
@@ -15,7 +23,7 @@ const DEPARTMENT = {
   FINANCE: "FINANCE",
 };
 
-const VALID_ACTIONS = ["ACCEPTED", "REJECTED"];
+const VALID_ACTIONS = ["APPROVED", "REJECTED"];
 
 // Swagger options
 const swaggerOptions = {
@@ -92,7 +100,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  */
 app.post("/api/work", async (req, res) => {
   const { workerDepartment, fileId, action } = req.body;
-
+  const URL = "http://localhost:3030/api/file";
   try {
     const CURRENT_DEPARTMENT = DEPARTMENT[workerDepartment];
     if (!CURRENT_DEPARTMENT) {
@@ -118,9 +126,10 @@ app.post("/api/work", async (req, res) => {
       file: response.data.file,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send({
-      message: "There was an error...",
+      message: "There was an error processing your request.",
+      error: error.message,
     });
   }
 });
