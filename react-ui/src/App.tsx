@@ -4,19 +4,27 @@ import { ToastContainer } from "react-toastify";
 import WorkerDashboard from "./pages/WorkerDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import { ToastProvider, ToastViewport } from "./components/ui/toast";
+import Layout from "./project_component/Layout";
 
 const router = createBrowserRouter([
   {
     path: "/",
+    element: <Layout />,
+    children: [
+      {
+        index: true,
+        path: "/worker/dashboard",
+        element: <WorkerDashboard />,
+      },
+      {
+        path: "/student/dashboard",
+        element: <StudentDashboard />,
+      },
+    ],
+  },
+  {
+    path: "/auth",
     element: <AuthPage />,
-  },
-  {
-    path: "/worker/dashboard",
-    element: <WorkerDashboard />,
-  },
-  {
-    path: "/student/dashboard",
-    element: <StudentDashboard />,
   },
 ]);
 const App = () => {

@@ -45,7 +45,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       <object
         data={pdfSource.url}
         type="application/pdf"
-        className="p-2 w-full h-full min-h-[96vh]"
+        className="w-full h-full bg-black rounded-sm"
         onLoad={handlePDFLoad}
         onError={handlePDFError}
         data-testid="pdf-viewer"
@@ -64,11 +64,13 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   };
 
   return (
-    <div className={`flex flex-col gap-4 p-4 max-w-5xl mx-auto ${className}`}>
-      <Card>
+    <div
+      className={`h-[85vh] flex flex-col justify-center gap-4 max-w-5xl mx-auto ${className}`}
+    >
+      <Card className="p-2 h-full">
         <CardContent className="p-0 relative h-full">
           {loading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+            <div className="h-full absolute inset-0 flex items-center justify-center bg-gray-50">
               <Loader2 className="w-8 h-8 animate-spin" />
             </div>
           )}

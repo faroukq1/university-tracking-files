@@ -1,18 +1,15 @@
+import DashBoard from "../project_component/DashBoard";
 import DisplayPdf from "../project_component/DisplayPdf";
 
 const WorkerDashboard = () => {
-  // You can use any of these formats:
-  const pdfUrl = "https://www.orimi.com/pdf-test.pdf"; // From public folder
-  // const pdfUrl = "C:/Users/NBX/Downloads/Documents/pdf-open-parameters.pdf"; // Local file path
-  // const pdfUrl = "https://example.com/sample.pdf"; // Remote URL
-
+  const pdfUrl = "https://www.orimi.com/pdf-test.pdf";
   return (
-    <main className="h-screen flex">
-      <div className="flex-1 bg-black"></div>
-      <div className="flex-1 bg-gray-500">
+    <div className="flex gap-4">
+      <div className="flex-1">
         <DisplayPdf initialPdfUrl={pdfUrl} />
       </div>
-    </main>
+      <DashBoard />
+    </div>
   );
 };
 
