@@ -3,6 +3,7 @@ import AuthPage from "./pages/AuthPage";
 import { ToastContainer } from "react-toastify";
 import WorkerDashboard from "./pages/WorkerDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
+import { ToastProvider, ToastViewport } from "./components/ui/toast";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -21,8 +22,11 @@ const router = createBrowserRouter([
 const App = () => {
   return (
     <>
-      <RouterProvider router={router} />
-      <ToastContainer />
+      <ToastProvider>
+        <RouterProvider router={router} />
+        <ToastContainer />
+        <ToastViewport className="fixed top-4 right-4 z-50" />
+      </ToastProvider>
     </>
   );
 };

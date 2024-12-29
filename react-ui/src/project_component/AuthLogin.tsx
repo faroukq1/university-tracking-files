@@ -10,9 +10,9 @@ import {
 import { Input } from "../components/ui/input";
 import { FaGithubAlt } from "react-icons/fa";
 import axios from "axios";
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const user = localStorage.getItem("user");
 const current_user = user ? JSON.parse(user) : null;
@@ -25,8 +25,8 @@ const AuthLogin = () => {
   const navigate = useNavigate();
 
   const handleSignUp = async () => {
-    setLoading(true); // Set loading to true before making the request
-    setError(null); // Reset error state
+    setLoading(true);
+    setError(null);
 
     const URL = "http://localhost:3001/api/auth";
     try {
@@ -36,16 +36,15 @@ const AuthLogin = () => {
       });
       const data = response.data;
       const role = data.user.roleDetails.role;
-      toast.success("Logged in successfully!");
       localStorage.setItem("user", JSON.stringify(data));
       if (role === "WORKER") navigate("/worker/dashboard");
       if (role === "STUDENT") navigate("/student/dashboard");
       setEmail("");
       setPassword("");
+      toast.success("Login successfully");
     } catch (err) {
       console.error("Error:", err);
-      setError("Failed to login. Please check your email and password.");
-      toast.error("Failed to login! Please try again.");
+      setError("Invalid email or password");
     } finally {
       setLoading(false);
       setEmail("");
