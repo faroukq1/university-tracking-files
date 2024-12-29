@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import { useState } from "react";
+import axios from "axios";
 import { Button } from "../components/ui/button";
 import {
   Card,
@@ -9,13 +9,10 @@ import {
 } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { FaGithubAlt } from "react-icons/fa";
-import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-
-const user = localStorage.getItem("user");
-const current_user = user ? JSON.parse(user) : null;
+import useAuthStore from "../store/authStore";
 
 const AuthLogin = () => {
   const [email, setEmail] = useState<string>("");
@@ -23,7 +20,7 @@ const AuthLogin = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-
+  const setUser = useAuthStore((state) => state.setUser);
   const handleSignUp = async () => {
     setLoading(true);
     setError(null);
@@ -36,6 +33,7 @@ const AuthLogin = () => {
       });
       const data = response.data;
       const role = data.user.roleDetails.role;
+      setUser(data.user);
       localStorage.setItem("user", JSON.stringify(data));
       if (role === "WORKER") navigate("/worker/dashboard");
       if (role === "STUDENT") navigate("/student/dashboard");

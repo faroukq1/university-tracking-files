@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const express = require("express");
+const cors = require("cors");
 const multer = require("multer");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
@@ -7,8 +8,14 @@ require("dotenv").config();
 
 const app = express();
 const prisma = new PrismaClient();
-
 app.use(express.json());
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 const DEPARTMENT = {
   ADMINISTRATION: "ADMINISTRATION",
@@ -85,8 +92,8 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
  *       500:
  *         description: Internal server error.
  */
-app.get("/api/files", async (req, res) => {
-  const department = req.query.department;
+app.get("/api/files/:department", async (req, res) => {
+  const department = req.params.department;
   try {
     const worker_department = DEPARTMENT[department];
 
