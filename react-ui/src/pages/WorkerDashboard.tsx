@@ -1,14 +1,27 @@
 import DashBoard from "../project_component/DashBoard";
 import DisplayPdf from "../project_component/DisplayPdf";
-
+import { useFileIdStore, useFileStore } from "../store/authStore";
 const WorkerDashboard = () => {
-  const pdfUrl = "https://www.orimi.com/pdf-test.pdf";
-  const local_pdf_url =
-    "http://localhost:3030/uploads/1735332079640-Chapitre2-SOA-Klai.pdf";
+  const fileId = useFileIdStore((state) => state.fileId);
+  const files = useFileStore((state) => state.files);
+  const current_file = files.filter((file) => file.id == fileId);
   return (
     <div className="flex gap-4">
       <div className="flex-1">
-        <DisplayPdf initialPdfUrl={pdfUrl} />
+        {current_file.length ? (
+          <div className="w-full">
+            <img
+              src={`http://localhost:3060/${current_file[0].financePictureUrl}`}
+              alt="administration picture"
+            />
+            <img
+              src={`http://localhost:3060/${current_file[0].adminPictureUrl}`}
+              alt="administration picture"
+            />
+          </div>
+        ) : (
+          <DisplayPdf initialPdfUrl={""} />
+        )}
       </div>
       <DashBoard />
     </div>

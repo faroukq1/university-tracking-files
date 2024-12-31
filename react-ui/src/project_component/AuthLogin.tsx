@@ -34,7 +34,6 @@ const AuthLogin = () => {
       const data = response.data;
       const role = data.user.roleDetails.role;
       setUser(data.user);
-      localStorage.setItem("user", JSON.stringify(data));
       if (role === "WORKER") navigate("/worker/dashboard");
       if (role === "STUDENT") navigate("/student/dashboard");
       setEmail("");

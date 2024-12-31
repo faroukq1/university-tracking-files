@@ -14,8 +14,8 @@ model Person {
   email     String    @unique
   password String
   role      Role      @default(STUDENT)
-  student   Student?  // Optional relationship for students
-  worker    Worker?   // Optional relationship for workers
+  student   Student?
+  worker    Worker?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -40,6 +40,5 @@ enum Role {
 
 enum Department {
   ADMINISTRATION
-  EDUCATION
   FINANCE
 }

@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Define departments
-  const departments = ["ADMINISTRATION", "EDUCATION", "FINANCE"];
+  const departments = ["ADMINISTRATION", "FINANCE"];
 
   // Create workers
   const workers = await Promise.all(

@@ -15,31 +15,55 @@ interface User {
   lastName: string;
   roleDetails: RoleDetails;
 }
-type fileType = {
-  ADMINISTRATION: "PENDING";
-  EDUCATION: "PENDING";
-  FINANCE: "PENDING";
-  comments: string | null;
-  documentType: "passport" | string;
-  fileDescription: string;
-  fileFormat: string;
-  fileName: string;
-  fileSize: string;
+
+type FileType = {
   id: number;
-  personId: number;
+  name: string;
+  description?: string | null;
   studentId: number;
-  submissionDate: string;
+  personId: number;
+  adminPictureUrl?: string | null;
+  financePictureUrl?: string | null;
+  adminStatus: "PENDING" | "ACCEPTED" | "REJECTED";
+  financeStatus: "PENDING" | "ACCEPTED" | "REJECTED";
+  createdAt: string;
+  updatedAt: string;
 };
+
+interface FileState {
+  files: FileType[];
+  addFiles: (files: FileType[]) => void;
+  updateFile: (id: number, updatedFile: Partial<FileType>) => void;
+  removeFile: (id: number) => void;
+}
+
+const useFileStore = create<FileState>()(
+  persist(
+    (set) => ({
+      files: [],
+      addFiles: (files) =>
+        set((state) => ({
+          files: files,
+        })),
+      updateFile: (id, updatedFile) =>
+        set((state) => ({
+          files: state.files.map((file) =>
+            file.id === id ? { ...file, ...updatedFile } : file
+          ),
+        })),
+      removeFile: (id) =>
+        set((state) => ({
+          files: state.files.filter((file) => file.id !== id),
+        })),
+    }),
+    { name: "file-storage" }
+  )
+);
 
 interface AuthState {
   user: User | null;
   setUser: (userData: User) => void;
   clearUser: () => void;
-}
-
-interface studentFileState {
-  studentsFiles: fileType[];
-  setStudentsFiles: (studentsFilesData: fileType[]) => void;
 }
 
 const useAuthStore = create<AuthState>()(
@@ -58,14 +82,13 @@ const useAuthStore = create<AuthState>()(
   )
 );
 
-const useStudentStore = create<studentFileState>()(
-  persist(
-    (set) => ({
-      studentsFiles: [],
-      setStudentsFiles: (studentsFilesData: fileType[]) =>
-        set(() => ({ studentsFiles: studentsFilesData })),
-    }),
-    { name: "studentsFilesStorage" }
-  )
-);
-export { useAuthStore, useStudentStore };
+interface FileIdState {
+  fileId: number;
+  setFileId: (id: number) => void;
+}
+
+const useFileIdStore = create<FileIdState>((set) => ({
+  fileId: 0, // initial state
+  setFileId: (id) => set({ fileId: id }), // function to set file ID
+}));
+export { useAuthStore, useFileStore, useFileIdStore };

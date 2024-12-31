@@ -24,7 +24,6 @@ const WorkerDetails = () => {
 
   const { firstName, lastName, email, roleDetails } = user;
   const { department, role } = roleDetails;
-
   return (
     <Card className="w-full mx-auto p-0 rounded-sm">
       <CardHeader className="space-y-1">

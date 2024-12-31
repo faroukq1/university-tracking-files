@@ -1,16 +1,27 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
+import { Button } from "../components/ui/button";
+import { useAuthStore } from "../store/authStore";
 
 const Layout = () => {
+  const navigation = useNavigate();
+  const logOut = useAuthStore((state) => state.clearUser);
+  const handleLogOut = () => {
+    logOut();
+    navigation("/auth");
+  };
   return (
     <main
       className="h-screen grid"
       style={{ gridTemplateRows: "auto 1fr auto" }}
     >
       {/* Header/Nav */}
-      <nav className="bg-slate-800 p-3 text-center">
+      <nav className="bg-slate-800 p-3 flex items-center justify-between px-8">
         <h1 className="font-bold font-xl text-white leading-8">
           University Tracking System
         </h1>
+        <Button onClick={handleLogOut} variant={"destructive"}>
+          LogOut
+        </Button>
       </nav>
 
       {/* Main Content */}
